@@ -24,7 +24,7 @@ O Breakout e feito de retangulos e sprites. Ele traz os dois de volta a vida.
 | 04 | [Vidas, pontuacao e fases](04-vidas-pontuacao-fases.md) | done | Dominio + Fluxo |
 | 05 | [Pausa](05-pausa.md) | done | Plataforma |
 | 06 | [Audio](06-audio.md) | done | Plataforma |
-| 07 | [Recordes](07-recordes.md) | in-progress | Politica do jogo |
+| 07 | [Recordes](07-recordes.md) | done | Politica do jogo |
 
 ## Backlog
 

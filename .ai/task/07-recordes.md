@@ -1,6 +1,6 @@
 # 07 - Recordes
 
-- **Status:** in-progress (suite verde; falta a validacao jogavel)
+- **Status:** done (2026-07-14 — validado jogando pelo usuario)
 - **Prioridade:** media - fecha o ciclo da partida (jogar -> perder -> se ver na
   tabela -> querer de novo). E a ultima task do jogo.
 - **Categoria:** Politica do jogo
@@ -44,6 +44,6 @@ de pontos + onda), e carrega as mesmas tres regras que o spaceinvaders nao tinha
 - [x] Build MSBuild verde (Release|x64), sem warnings.
 - [x] Um `records.tsv` existente NAO e destruido ao abrir o jogo (conferido no
       smoke test).
-- [ ] Validacao jogavel: fazer pontos, morrer, ver NOVO RECORDE, digitar o nome,
+- [x] Validacao jogavel: fazer pontos, morrer, ver NOVO RECORDE, digitar o nome,
       ver a tabela; abrir RECORDES pelo menu; fechar e reabrir o jogo e a tabela
-      continuar la.
+      continuar la. (2026-07-14.)
