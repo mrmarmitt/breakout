@@ -3,6 +3,7 @@
 #include <cengine/input/Keyboard.hpp>
 #include <cengine/routing/ISceneRepository.hpp>
 
+#include "audio/AudioPlayer.h"
 #include "breakout/game/GameRouter.h"
 #include "breakout/game/service/PlaySession.h"
 
@@ -21,14 +22,15 @@
 void ForgeSceneFactory::populateForgeScenes(cengine::routing::ISceneRepository& sceneRepository,
                                             const std::shared_ptr<GameRouter>&  gameRouter,
                                             const std::shared_ptr<PlaySession>& session,
-                                            cengine::input::Keyboard&           keyboard)
+                                            cengine::input::Keyboard&           keyboard,
+                                            AudioPlayer&                        audio)
 {
     sceneRepository.registerFactory(
         "initial", [gameRouter, &keyboard]() { return std::make_unique<ForgeSplashScene>(gameRouter, keyboard); });
     sceneRepository.registerFactory(
         "menu", [gameRouter, &keyboard]() { return std::make_unique<ForgeMenuScene>(gameRouter, keyboard); });
-    sceneRepository.registerFactory("game", [gameRouter, session, &keyboard]() {
-        return std::make_unique<ForgeGameScene>(gameRouter, session, keyboard);
+    sceneRepository.registerFactory("game", [gameRouter, session, &keyboard, &audio]() {
+        return std::make_unique<ForgeGameScene>(gameRouter, session, keyboard, audio);
     });
     sceneRepository.registerFactory("gameover", [gameRouter, session, &keyboard]() {
         return std::make_unique<ForgeGameOverScene>(gameRouter, session, keyboard);

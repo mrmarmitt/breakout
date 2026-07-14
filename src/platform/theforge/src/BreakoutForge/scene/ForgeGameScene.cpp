@@ -27,9 +27,36 @@ constexpr uint32_t kRowColors[] = {
 } // namespace
 
 ForgeGameScene::ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, std::shared_ptr<PlaySession> session,
-                               cengine::input::Keyboard& keyboard)
-    : m_gameRouter(std::move(gameRouter)), m_session(std::move(session)), m_keyboard(keyboard)
+                               cengine::input::Keyboard& keyboard, AudioPlayer& audio)
+    : m_gameRouter(std::move(gameRouter)), m_session(std::move(session)), m_keyboard(keyboard), m_audio(audio)
 {
+}
+
+void ForgeGameScene::playSounds(const brk::Events& events) const
+{
+    // Os EVENTOS sao contados, nao booleanos, entao dois tijolos no mesmo quadro
+    // tocam dois blips — e o jogo soa como o que aconteceu, nao como uma media.
+    for (uint32_t i = 0; i < events.brickBreaks; ++i)
+    {
+        m_audio.play(Sound::BrickBreak);
+    }
+    for (uint32_t i = 0; i < events.paddleHits; ++i)
+    {
+        m_audio.play(Sound::PaddleHit);
+    }
+    for (uint32_t i = 0; i < events.wallBounces; ++i)
+    {
+        m_audio.play(Sound::WallBounce);
+    }
+
+    if (events.lifeLost)
+    {
+        m_audio.play(Sound::LifeLost);
+    }
+    if (events.levelUp)
+    {
+        m_audio.play(Sound::LevelUp);
+    }
 }
 
 brk::Aabb ForgeGameScene::toScreen(const brk::Aabb& rect) const
@@ -101,6 +128,9 @@ void ForgeGameScene::update(const cengine::core::Seconds dt)
 
     m_world.setMoveAxis(m_keyboard.heldAxis(Key::Left, Key::Right));
     m_world.update(dt.count());
+
+    // O World RELATA o que aconteceu; a cena decide como isso SOA.
+    playSounds(m_world.events());
 
     // Acabaram as vidas: o World so CONSTATA; quem decide o que a derrota
     // significa e o fluxo. Publica o resultado (o World morre com a cena) e

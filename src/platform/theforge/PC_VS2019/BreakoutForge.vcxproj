@@ -39,6 +39,7 @@
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeMenuScene.cpp" />
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeGameScene.cpp" />
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeGameOverScene.cpp" />
+    <ClCompile Include="..\src\BreakoutForge\audio\AudioPlayer.cpp" />
     <!-- dominio do jogo (C++ puro; o mesmo World que a suite CMake exercita —
          GameRouter/estados seguem header-only) -->
     <ClCompile Include="$(GameRoot)src\breakout\game\World.cpp" />
@@ -121,6 +122,9 @@
         ws2_32.lib;
         Renderer.lib;
         OS.lib;
+        <!-- audio do jogo: XAudio2 2.9, que vem no proprio Windows SDK
+             (sem redistribuivel, sem terceiros) -->
+        xaudio2.lib;
         %(AdditionalDependencies);
       </AdditionalDependencies>
       <AdditionalOptions>/ignore:4099</AdditionalOptions>

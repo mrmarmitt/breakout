@@ -525,6 +525,93 @@ TEST(WorldTest, RunningOutOfLivesEndsTheGame)
     EXPECT_EQ(world.lives(), 0);
 }
 
+// =============================================================================
+// Eventos do quadro (task 06): o World RELATA; a plataforma decide o som
+// =============================================================================
+
+TEST(WorldTest, EventsStartEmpty)
+{
+    brk::World world = emptyArena();
+
+    world.update(kStep);
+
+    const brk::Events& events = world.events();
+    EXPECT_EQ(events.paddleHits, 0u);
+    EXPECT_EQ(events.wallBounces, 0u);
+    EXPECT_EQ(events.brickBreaks, 0u);
+    EXPECT_FALSE(events.lifeLost);
+    EXPECT_FALSE(events.levelUp);
+}
+
+TEST(WorldTest, HittingTheWallIsReported)
+{
+    brk::World world = emptyArena();
+
+    world.placeBall({ 4.0f, 300.0f }, { -brk::World::kBallSpeed, 0.0f });
+
+    for (int i = 0; i < 30 && world.events().wallBounces == 0; ++i)
+    {
+        world.update(kStep);
+    }
+
+    EXPECT_EQ(world.events().wallBounces, 1u);
+}
+
+TEST(WorldTest, HittingThePaddleIsReported)
+{
+    const brk::World world = ballFallingOnPaddleAt(brk::World::kArenaW * 0.5f);
+
+    EXPECT_EQ(world.events().paddleHits, 1u);
+}
+
+TEST(WorldTest, BreakingABrickIsReported)
+{
+    brk::World world;
+
+    const brk::Aabb brick = world.brickRect(kTopRowBrick);
+    world.placeBall({ centerX(brick) - brk::World::kBallSize * 0.5f, brick.y + brick.h + 2.0f },
+                    { 0.0f, -brk::World::kBallSpeed });
+
+    advanceUntilABrickBreaks(world);
+
+    EXPECT_EQ(world.events().brickBreaks, 1u);
+}
+
+TEST(WorldTest, EventsAreClearedEveryFrame)
+{
+    // Arena VAZIA e uma batida na parede: um evento isolado, que nao se repete
+    // no quadro seguinte (a bola ja esta voltando). Com tijolos isto nao daria
+    // certo — a bola nao cabe no vao entre fileiras, entao ela quebra a de baixo
+    // no quadro seguinte, e o evento novo seria confundido com um vazamento.
+    brk::World world = emptyArena();
+
+    world.placeBall({ 4.0f, 300.0f }, { -brk::World::kBallSpeed, 0.0f });
+
+    for (int i = 0; i < 30 && world.events().wallBounces == 0; ++i)
+    {
+        world.update(kStep);
+    }
+    ASSERT_EQ(world.events().wallBounces, 1u);
+
+    world.update(kStep);
+
+    // Os fatos sao DO QUADRO. Se vazassem, a cena tocaria o mesmo blip para
+    // sempre.
+    EXPECT_EQ(world.events().wallBounces, 0u);
+}
+
+TEST(WorldTest, LosingABallAndClearingTheWallAreReported)
+{
+    brk::World lost = emptyArena();
+    loseOneBall(lost);
+    EXPECT_TRUE(lost.events().lifeLost);
+
+    brk::World cleared;
+    cleared.clearBricks();
+    cleared.update(kStep);
+    EXPECT_TRUE(cleared.events().levelUp);
+}
+
 TEST(WorldTest, GameOverFreezesTheSimulation)
 {
     brk::World world = emptyArena();

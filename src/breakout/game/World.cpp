@@ -62,6 +62,8 @@ void World::update(const double dt)
         return;
     }
 
+    m_events = {}; // os fatos sao deste quadro, e so dele
+
     updatePaddle(dt);
     updateBall(dt);
 
@@ -115,17 +117,20 @@ void World::collideWalls()
     {
         m_ballPos.x = 0.0f;
         m_ballVel.x = -m_ballVel.x;
+        ++m_events.wallBounces;
     }
     else if (m_ballPos.x + kBallSize > kArenaW)
     {
         m_ballPos.x = kArenaW - kBallSize;
         m_ballVel.x = -m_ballVel.x;
+        ++m_events.wallBounces;
     }
 
     if (m_ballPos.y < 0.0f)
     {
         m_ballPos.y = 0.0f;
         m_ballVel.y = -m_ballVel.y;
+        ++m_events.wallBounces;
     }
 
     // Fundo NAO reflete: e por ali que a bola se perde. E a unica parede que o
@@ -155,6 +160,7 @@ void World::collideBricks()
         reflectOff(brickRect(i));
         award(brickRow(i)); // pontua ANTES de matar: a linha e o que vale
         killBrick(i);
+        ++m_events.brickBreaks;
 
         // Um tijolo por quadro: com dois tijolos vizinhos atingidos no mesmo
         // passo, refletir duas vezes devolveria a bola para dentro da parede.
@@ -187,6 +193,7 @@ void World::award(const uint32_t row)
 void World::loseLife()
 {
     --m_lives;
+    m_events.lifeLost = true;
 
     if (m_lives <= 0)
     {
@@ -202,6 +209,7 @@ void World::loseLife()
 void World::nextLevel()
 {
     ++m_level;
+    m_events.levelUp = true;
 
     // Fase nova comeca mais rapida — e o teto continua valendo.
     m_speedFactor = std::min(m_speedFactor * kLevelSpeedUp, kMaxSpeedFactor);
@@ -248,6 +256,8 @@ void World::collidePaddle()
     m_ballVel.y = -std::cos(angle) * speed; // sempre para cima
 
     m_ballPos.y = paddleRect.y - kBallSize; // desencosta, para nao grudar
+
+    ++m_events.paddleHits;
 }
 
 void World::reflectOff(const Aabb& target)

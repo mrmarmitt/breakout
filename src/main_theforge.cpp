@@ -34,6 +34,7 @@
 #include "breakout/game/state/StateGame.h"
 
 #include "platform/theforge/src/BreakoutForge/ForgeSceneFactory.h"
+#include "platform/theforge/src/BreakoutForge/audio/AudioPlayer.h"
 
 // platform-theforge-common (checkout irmao; include path no vcxproj)
 #include "ForgeUi.h"
@@ -87,9 +88,21 @@ int main()
         // cena do jogo); o PlaySession e quem sobrevive para o gameOver ler.
         const auto session = std::make_shared<PlaySession>();
 
+        // Audio: XAudio2 com os sons sintetizados na inicializacao (nenhum
+        // arquivo de audio no repo). Fica NO JOGO — nem a cengine nem o common
+        // teriam evidencia para uma ponte de audio hoje (ADR 0002: nenhum outro
+        // jogo do ecossistema tem som). Sem placa de som, o jogo roda mudo.
+        AudioPlayer audio;
+        if (!audio.init())
+        {
+            // O AudioPlayer nao loga (os headers do XAudio2 e do The-Forge brigam
+            // por _WIN32_WINNT) — ele devolve o HRESULT, e quem loga e aqui.
+            LOGF(eWARNING, "[breakout] sem audio: o jogo roda mudo (hr=0x%08X)", audio.lastError());
+        }
+
         // O teclado da PORTA (cengine::input): o casco captura e empurra, as
         // cenas leem. Vive no ForgeUi (sobrevive a todas as cenas).
-        ForgeSceneFactory::populateForgeScenes(sceneRepositoryRef, gameRouter, session, forgeui::keyboard());
+        ForgeSceneFactory::populateForgeScenes(sceneRepositoryRef, gameRouter, session, forgeui::keyboard(), audio);
 
         // Casco do common: fonte do The-Forge + o batcher de SPRITES ligado (o
         // atlas do jogo, gerado por tools/make-atlas-dds.ps1 e resolvido pelo

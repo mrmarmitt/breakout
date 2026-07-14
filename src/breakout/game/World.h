@@ -34,6 +34,22 @@ struct WorldConfig
     bool spawnBricks = true;
 };
 
+/// O que aconteceu NESTE quadro. O World RELATA os fatos; quem decide o que eles
+/// SIGNIFICAM na apresentacao (que som tocar, que particula soltar, que tela
+/// treme) e a plataforma.
+///
+/// Sem isto, a cena teria de adivinhar os eventos comparando o placar entre
+/// quadros ("o score subiu, entao um tijolo quebrou") — o que e fragil e, pior,
+/// nao distingue um tijolo de dois no mesmo quadro.
+struct Events
+{
+    uint32_t paddleHits = 0;
+    uint32_t wallBounces = 0;
+    uint32_t brickBreaks = 0;
+    bool     lifeLost = false;
+    bool     levelUp = false;
+};
+
 class World
 {
 public:
@@ -124,6 +140,9 @@ public:
     /// Velocidade ATUAL da bola (a base vezes o fator acumulado).
     [[nodiscard]] float ballSpeed() const { return kBallSpeed * m_speedFactor; }
 
+    /// O que aconteceu no ultimo `update(dt)` — zerado no comeco de cada um.
+    [[nodiscard]] const Events& events() const { return m_events; }
+
     [[nodiscard]] uint32_t brickCount() const { return kBrickCount; }
     [[nodiscard]] bool     brickAlive(uint32_t index) const;
     [[nodiscard]] Aabb     brickRect(uint32_t index) const;
@@ -176,6 +195,7 @@ private:
     bool     m_brickAlive[kBrickCount] = {};
     uint32_t m_bricksAlive = 0;
 
+    Events   m_events = {};
     Outcome  m_outcome = Outcome::Playing;
     int      m_score = 0;
     int      m_lives = kInitialLives;

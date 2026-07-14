@@ -8,6 +8,7 @@
 
 #include "ForgeSpriteUi.h"
 
+#include "../audio/AudioPlayer.h"
 #include "breakout/game/World.h"
 
 class GameRouter;
@@ -25,6 +26,7 @@ class ForgeGameScene final: public cengine::core::IScene
     std::shared_ptr<GameRouter>  m_gameRouter;
     std::shared_ptr<PlaySession> m_session;
     cengine::input::Keyboard&    m_keyboard;
+    AudioPlayer&                 m_audio;
     brk::World                   m_world;
 
     /// PAUSA: um overlay do JOGO, nao um estado do router.
@@ -45,9 +47,13 @@ class ForgeGameScene final: public cengine::core::IScene
     /// O jogo, congelado, atras de um veu escuro + o painel da pausa.
     void drawPauseOverlay() const;
 
+    /// Traduz os FATOS do quadro (brk::Events) em SOM. O World nao sabe o que e
+    /// um alto-falante; a cena nao sabe o que e uma regra.
+    void playSounds(const brk::Events& events) const;
+
 public:
     ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, std::shared_ptr<PlaySession> session,
-                   cengine::input::Keyboard& keyboard);
+                   cengine::input::Keyboard& keyboard, AudioPlayer& audio);
 
     void onEnter() override {}
     void update(cengine::core::Seconds dt) override;

@@ -1,6 +1,6 @@
 # 05 - Pausa
 
-- **Status:** in-progress (build verde; falta a validacao jogavel)
+- **Status:** done (2026-07-14 — validado jogando pelo usuario)
 - **Prioridade:** media - conforto de jogo; e o gatilho do gate da task 18 da
   cengine.
 - **Categoria:** Plataforma (cena)
@@ -59,6 +59,6 @@ validacao e jogavel.
 - [x] Build MSBuild verde (Release|x64).
 - [x] O `World` nao mudou (a suite segue verde, 31 testes).
 - [x] Gate da task 18 avaliado e documentado nos dois repos (evidencia 1/2).
-- [ ] Validacao jogavel: ESC pausa com a bola no ar; o jogo aparece congelado
+- [x] Validacao jogavel: ESC pausa com a bola no ar; o jogo aparece congelado
       atras do veu; ENTER continua de onde parou (a bola segue na mesma
-      direcao); ESC abandona para o menu.
+      direcao); ESC abandona para o menu. (2026-07-14.)
