@@ -6,21 +6,24 @@
 #include <cengine/core/Time.hpp>
 #include <cengine/input/Keyboard.hpp>
 
+#include "breakout/game/World.h"
+
 class GameRouter;
 
-// Placeholder do gameplay (estado "game") — degrau do casco (task 01): uma
-// raquete de texto anda com as setas SEGURADAS, validando o ESTADO CONTINUO da
-// porta de input (`isHeld`/`heldAxis`) no mesmo update de dt fixo que o World
-// vai usar.
+// O estado "game": a cena e so a casca — traduz o input da PORTA em comandos do
+// World, chama update(dt) com o passo fixo do engine e desenha lendo as
+// consultas. Nenhuma regra de jogo mora aqui.
 //
-// O World de verdade (raquete + bola + tijolos, colisao AABB pela
-// cengine::collision2d) entra na task 02.
+// Desenho ainda por TEXTO (os sprites entram na task 03, que e quando este jogo
+// traz o forgesprite de volta a vida).
 class ForgeGameScene final: public cengine::core::IScene
 {
     std::shared_ptr<GameRouter> m_gameRouter;
     cengine::input::Keyboard&   m_keyboard;
+    brk::World                  m_world;
 
-    float m_paddleX = 0.5f; // posicao normalizada (0..1)
+    /// Projeta um retangulo da arena (800x600) para pixels da tela.
+    [[nodiscard]] brk::Aabb toScreen(const brk::Aabb& rect) const;
 
 public:
     ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, cengine::input::Keyboard& keyboard);

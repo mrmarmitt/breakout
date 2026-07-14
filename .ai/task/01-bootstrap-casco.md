@@ -1,6 +1,6 @@
 # 01 - Bootstrap do casco (The-Forge + cengine 0.8.0 + common 0.3.0)
 
-- **Status:** in-progress (build verde; falta a validacao jogavel)
+- **Status:** done (2026-07-14 — validado jogando pelo usuario)
 - **Prioridade:** alta - nada existe sem o casco.
 - **Categoria:** Plataforma
 - **Depende de:** checkouts irmaos The-Forge (Unit_Tests buildada), cengine
@@ -52,8 +52,11 @@ vivo o compila).
 - [x] Build MSBuild verde (Release|x64) com os tres repos irmaos.
 - [x] Cenas consumindo a porta de input da cengine (nao as globais do forgeui).
 - [x] Nenhum include do The-Forge em `src/breakout/` (dominio puro).
-- [ ] Fluxo completo jogavel: splash -> menu -> game -> menu -> exit, janela
+- [x] Fluxo completo jogavel: splash -> menu -> game -> menu -> exit, janela
       fecha limpa.
-- [ ] Raquete anda com as setas SEGURADAS (o estado continuo da porta validado)
+- [x] Raquete anda com as setas SEGURADAS (o estado continuo da porta validado)
       e o menu NAO varre varios itens com a seta segurada (a fila de edges
       validada — um evento por input()).
+
+Validado jogando em 2026-07-14. Isto fecha tambem o ultimo criterio de aceite da
+**task 20 da cengine**: uma cena consumindo a PORTA de input, e nao a ponte.

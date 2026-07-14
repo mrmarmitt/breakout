@@ -18,14 +18,11 @@ O Breakout e feito de retangulos e sprites. Ele traz os dois de volta a vida.
 
 | # | Task | Status | Categoria |
 |---|------|--------|-----------|
-| 01 | [Bootstrap do casco](01-bootstrap-casco.md) | in-progress | Plataforma |
+| 01 | [Bootstrap do casco](01-bootstrap-casco.md) | done | Plataforma |
+| 02 | [Dominio: raquete, bola e tijolos](02-dominio-raquete-bola-tijolos.md) | in-progress | Dominio |
 
 ## Backlog (tasks a abrir quando chegarem)
 
-- **02 — Dominio: raquete, bola e tijolos** (C++ puro + testes CMake): colisao
-  AABB pela `cengine::collision2d` (o consumidor VIVO que faltava). A ENGINE diz
-  que bateu; o JOGO decide a reflexao do vetor — reflexao e politica de gameplay,
-  nao geometria.
 - **03 — Sprites**: atlas do jogo, `forgesprite` LIGADO (o batcher volta a ter
   consumidor vivo).
 - **04 — Vidas, pontuacao e fases**: fluxo completo.

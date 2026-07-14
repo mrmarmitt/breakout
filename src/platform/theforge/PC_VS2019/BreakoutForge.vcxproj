@@ -38,8 +38,9 @@
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeSplashScene.cpp" />
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeMenuScene.cpp" />
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeGameScene.cpp" />
-    <!-- dominio do jogo: header-only neste degrau (GameRouter herda o FlowRouter
-         da cengine; estados inline) — o World entra na task 02 -->
+    <!-- dominio do jogo (C++ puro; o mesmo World que a suite CMake exercita —
+         GameRouter/estados seguem header-only) -->
+    <ClCompile Include="$(GameRoot)src\breakout\game\World.cpp" />
     <!-- cengine (core + routing + collision2d + input) -->
     <ClCompile Include="$(CengineRoot)core\src\EngineManager.cpp" />
     <ClCompile Include="$(CengineRoot)modules\routing\src\GameManager.cpp" />

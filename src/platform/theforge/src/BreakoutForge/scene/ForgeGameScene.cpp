@@ -1,6 +1,7 @@
 #include "ForgeGameScene.h"
 
-#include <algorithm>
+#include <cstdio>
+#include <string>
 #include <utility>
 
 #include "breakout/game/GameRouter.h"
@@ -10,7 +11,31 @@
 using cengine::input::Key;
 
 namespace {
-constexpr float kSpeed = 0.9f; // fracao da tela por segundo
+
+// Cor por linha de tijolo (as de cima valem mais — a pontuacao entra na task 04).
+constexpr uint32_t kRowColors[] = {
+    forgeui::color::kAccent,  forgeui::color::kValue,  forgeui::color::kSuccess,
+    forgeui::color::kSuccess, forgeui::color::kText,   forgeui::color::kDim,
+};
+
+// Enquanto nao ha sprite, um retangulo e desenhado como uma FILEIRA DE '#'
+// dimensionada para o tamanho dele. Feio de proposito: o desenho de verdade e
+// a task 03.
+void drawBlock(const brk::Aabb& r, const uint32_t color)
+{
+    const float fontSize = r.h;
+    const float glyphW = forgeui::textWidth("#", fontSize);
+    const auto  count = static_cast<int>(r.w / (glyphW > 0.0f ? glyphW : 1.0f));
+
+    std::string block;
+    for (int i = 0; i < count; ++i)
+    {
+        block += "#";
+    }
+
+    forgeui::drawText(block, r.x, r.y, fontSize, color);
+}
+
 } // namespace
 
 ForgeGameScene::ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, cengine::input::Keyboard& keyboard)
@@ -18,30 +43,58 @@ ForgeGameScene::ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, cengine::
 {
 }
 
+brk::Aabb ForgeGameScene::toScreen(const brk::Aabb& rect) const
+{
+    const float sx = forgeui::screenWidth() / brk::World::kArenaW;
+    const float sy = forgeui::screenHeight() / brk::World::kArenaH;
+
+    return { rect.x * sx, rect.y * sy, rect.w * sx, rect.h * sy };
+}
+
 void ForgeGameScene::input()
 {
-    // Edges: so a transicao de estado. O movimento e estado CONTINUO, lido no
+    // Edges: transicao de estado e o saque. Movimento e estado CONTINUO, lido no
     // update — as duas leituras da porta, cada uma no seu lugar.
-    if (m_keyboard.readKey().key == Key::Escape)
+    switch (m_keyboard.readKey().key)
     {
+    case Key::Escape:
         m_gameRouter->menu();
+        break;
+    case Key::Char: // o espaco chega como Char ' ' pela fila (WM_CHAR)
+        m_world.serve();
+        break;
+    default:
+        break;
     }
 }
 
 void ForgeGameScene::update(const cengine::core::Seconds dt)
 {
-    const float step = kSpeed * static_cast<float>(dt.count());
-    m_paddleX = std::clamp(m_paddleX + m_keyboard.heldAxis(Key::Left, Key::Right) * step, 0.08f, 0.92f);
+    m_world.setMoveAxis(m_keyboard.heldAxis(Key::Left, Key::Right));
+    m_world.update(dt.count());
 }
 
 void ForgeGameScene::draw()
 {
-    const float w = forgeui::screenWidth();
-    const float h = forgeui::screenHeight();
+    for (uint32_t i = 0; i < m_world.brickCount(); ++i)
+    {
+        if (m_world.brickAlive(i))
+        {
+            drawBlock(toScreen(m_world.brickRect(i)), kRowColors[m_world.brickRow(i)]);
+        }
+    }
 
-    // A raquete: um traco de texto, so para o casco ter o que mover.
-    forgeui::drawText("=========", m_paddleX * w - 60.0f, h * 0.88f, 28.0f, forgeui::color::kSuccess);
+    drawBlock(toScreen(m_world.paddle()), forgeui::color::kSuccess);
+    drawBlock(toScreen(m_world.ball()), forgeui::color::kText);
 
-    forgeui::drawText("CASCO (task 01) — o World entra na task 02", 24.0f, 24.0f, 18.0f, forgeui::color::kFaint);
-    forgeui::drawHints("SETAS <- -> mover a raquete   ESC voltar ao menu");
+    char hud[64] = {};
+    std::snprintf(hud, sizeof(hud), "TIJOLOS %u   BOLAS PERDIDAS %u", m_world.bricksAlive(), m_world.ballsLost());
+    forgeui::drawText(hud, 24.0f, 24.0f, 18.0f, forgeui::color::kDim);
+
+    if (m_world.serving())
+    {
+        forgeui::drawTextCentered("ESPACO para sacar", forgeui::screenHeight() * 0.60f, 24.0f, forgeui::color::kAccent);
+    }
+
+    forgeui::drawHints("SETAS <- -> mover   ESPACO sacar   ESC voltar ao menu");
 }
