@@ -1,6 +1,6 @@
 # 06 - Audio
 
-- **Status:** in-progress (build verde, device abrindo; falta a validacao ouvindo)
+- **Status:** done (2026-07-14 — validado ouvindo pelo usuario)
 - **Prioridade:** media - conforto; e a **borda de conhecimento nova** do
   ecossistema (nenhum jogo tinha som).
 - **Categoria:** Plataforma (jogo)
@@ -76,5 +76,6 @@ nos. Sem `CoInitializeEx`, o device falha calado.)
 - [x] Build MSBuild verde (Release|x64), sem warnings.
 - [x] Nenhum arquivo de audio no repo (sons gerados em codigo).
 - [x] Device de audio abrindo (log limpo); sem device, o jogo roda mudo.
-- [ ] Validacao OUVINDO: cada evento tem o seu som; dois tijolos no mesmo quadro
+- [x] Validacao OUVINDO: cada evento tem o seu som; dois tijolos no mesmo quadro
       soam duas vezes; a pausa nao toca nada (o World esta congelado).
+      (2026-07-14 — os timbres sintetizados nao precisaram de ajuste.)
