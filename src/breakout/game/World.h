@@ -37,8 +37,34 @@ struct WorldConfig
 class World
 {
 public:
+    /// A partida acaba quando as vidas acabam. Quem decide o que fazer com isso
+    /// e a cena (rotear para o gameOver) — o World so constata.
+    enum class Outcome : uint8_t
+    {
+        Playing,
+        GameOver,
+    };
+
     static constexpr float kArenaW = 800.0f;
     static constexpr float kArenaH = 600.0f;
+
+    // --- partida ---
+    static constexpr int kInitialLives = 3;
+
+    /// Pontos por linha de tijolo (os de CIMA valem mais — sao os mais dificeis
+    /// de alcancar). Valores do arcade: 7/7/4/4/1/1, de cima para baixo.
+    [[nodiscard]] static int scoreForRow(uint32_t row);
+
+    /// A cada tantos tijolos quebrados, a bola acelera um pouco — a tensao que
+    /// o arcade cria sem mudar nenhuma regra.
+    static constexpr uint32_t kSpeedUpEveryHits = 8;
+    static constexpr float    kSpeedUpFactor = 1.04f;
+
+    /// Cada fase nova comeca mais rapida que a anterior.
+    static constexpr float kLevelSpeedUp = 1.08f;
+
+    /// Teto da aceleracao: sem isso a bola vira um raio e o jogo, um sorteio.
+    static constexpr float kMaxSpeedFactor = 1.6f;
 
     // --- raquete ---
     static constexpr float kPaddleW = 110.0f;
@@ -89,9 +115,14 @@ public:
     /// Bola presa na raquete, esperando o saque.
     [[nodiscard]] bool serving() const { return m_serving; }
 
-    /// Quantas bolas cairam pelo fundo. Vidas/pontuacao/fases sao a task 04;
-    /// por ora este contador e o que PROVA que a bola pode ser perdida.
-    [[nodiscard]] uint32_t ballsLost() const { return m_ballsLost; }
+    // --- placar da partida ---
+    [[nodiscard]] Outcome  outcome() const { return m_outcome; }
+    [[nodiscard]] int      score() const { return m_score; }
+    [[nodiscard]] int      lives() const { return m_lives; }
+    [[nodiscard]] uint32_t level() const { return m_level; }
+
+    /// Velocidade ATUAL da bola (a base vezes o fator acumulado).
+    [[nodiscard]] float ballSpeed() const { return kBallSpeed * m_speedFactor; }
 
     [[nodiscard]] uint32_t brickCount() const { return kBrickCount; }
     [[nodiscard]] bool     brickAlive(uint32_t index) const;
@@ -115,6 +146,17 @@ private:
     void collideBricks();
     void collidePaddle();
 
+    /// Pontua o tijolo e acelera a bola de tantos em tantos acertos.
+    void award(uint32_t row);
+
+    /// Tira uma vida; sem vidas, a partida acaba.
+    void loseLife();
+
+    /// Parede limpa: proxima fase, tijolos de volta, bola mais rapida.
+    void nextLevel();
+
+    void resetBricks();
+
     /// Reflete a bola no retangulo atingido pelo eixo de MENOR penetracao — se
     /// ela entrou mais fundo em X do que em Y, foi pelo lado, entao inverte vx.
     /// A engine so disse que os retangulos se tocam; isto aqui e do jogo.
@@ -133,7 +175,13 @@ private:
 
     bool     m_brickAlive[kBrickCount] = {};
     uint32_t m_bricksAlive = 0;
-    uint32_t m_ballsLost = 0;
+
+    Outcome  m_outcome = Outcome::Playing;
+    int      m_score = 0;
+    int      m_lives = kInitialLives;
+    uint32_t m_level = 1;
+    uint32_t m_hits = 0;         // tijolos quebrados nesta fase (cadencia da aceleracao)
+    float    m_speedFactor = 1.0f;
 };
 
 } // namespace brk

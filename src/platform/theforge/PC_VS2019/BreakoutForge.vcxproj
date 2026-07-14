@@ -38,6 +38,7 @@
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeSplashScene.cpp" />
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeMenuScene.cpp" />
     <ClCompile Include="..\src\BreakoutForge\scene\ForgeGameScene.cpp" />
+    <ClCompile Include="..\src\BreakoutForge\scene\ForgeGameOverScene.cpp" />
     <!-- dominio do jogo (C++ puro; o mesmo World que a suite CMake exercita —
          GameRouter/estados seguem header-only) -->
     <ClCompile Include="$(GameRoot)src\breakout\game\World.cpp" />

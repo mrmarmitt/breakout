@@ -1,6 +1,6 @@
 # 03 - Sprites: o forgesprite volta a ter consumidor vivo
 
-- **Status:** in-progress (build verde; falta a validacao jogavel)
+- **Status:** done (2026-07-14 — validado jogando pelo usuario)
 - **Prioridade:** media - o jogo funciona sem isto, mas a lib nao.
 - **Categoria:** Plataforma
 - **Depende de:** task 02 (o World), platform-theforge-common >= 0.4.0.
@@ -51,5 +51,5 @@ de graca em qualquer cor.
 - [x] Build MSBuild verde (Release|x64).
 - [x] `forgesprite` com consumidor VIVO de novo.
 - [x] O asteroids (outro consumidor vivo do common) segue compilando com a 0.4.0.
-- [ ] Validacao jogavel: tijolos, raquete e bola como sprites; cores por linha;
-      HUD por cima do jogo.
+- [x] Validacao jogavel: tijolos, raquete e bola como sprites; cores por linha;
+      HUD por cima do jogo. (2026-07-14.)

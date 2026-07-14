@@ -30,6 +30,7 @@
 #include <cengine/routing/SceneRepository.hpp>
 
 #include "breakout/game/GameRouter.h"
+#include "breakout/game/service/PlaySession.h"
 #include "breakout/game/state/StateGame.h"
 
 #include "platform/theforge/src/BreakoutForge/ForgeSceneFactory.h"
@@ -82,9 +83,13 @@ int main()
 
         const auto gameRouter = std::make_shared<GameRouter>(router);
 
+        // O resultado da partida atravessa a troca de cena (o World morre com a
+        // cena do jogo); o PlaySession e quem sobrevive para o gameOver ler.
+        const auto session = std::make_shared<PlaySession>();
+
         // O teclado da PORTA (cengine::input): o casco captura e empurra, as
         // cenas leem. Vive no ForgeUi (sobrevive a todas as cenas).
-        ForgeSceneFactory::populateForgeScenes(sceneRepositoryRef, gameRouter, forgeui::keyboard());
+        ForgeSceneFactory::populateForgeScenes(sceneRepositoryRef, gameRouter, session, forgeui::keyboard());
 
         // Casco do common: fonte do The-Forge + o batcher de SPRITES ligado (o
         // atlas do jogo, gerado por tools/make-atlas-dds.ps1 e resolvido pelo

@@ -1,9 +1,11 @@
 #include "ForgeGameScene.h"
 
 #include <cstdio>
+#include <string>
 #include <utility>
 
 #include "breakout/game/GameRouter.h"
+#include "breakout/game/service/PlaySession.h"
 
 #include "../BreakoutSprites.h"
 #include "ForgeSpriteUi.h"
@@ -22,8 +24,9 @@ constexpr uint32_t kRowColors[] = {
 
 } // namespace
 
-ForgeGameScene::ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, cengine::input::Keyboard& keyboard)
-    : m_gameRouter(std::move(gameRouter)), m_keyboard(keyboard)
+ForgeGameScene::ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, std::shared_ptr<PlaySession> session,
+                               cengine::input::Keyboard& keyboard)
+    : m_gameRouter(std::move(gameRouter)), m_session(std::move(session)), m_keyboard(keyboard)
 {
 }
 
@@ -66,6 +69,15 @@ void ForgeGameScene::update(const cengine::core::Seconds dt)
 {
     m_world.setMoveAxis(m_keyboard.heldAxis(Key::Left, Key::Right));
     m_world.update(dt.count());
+
+    // Acabaram as vidas: o World so CONSTATA; quem decide o que a derrota
+    // significa e o fluxo. Publica o resultado (o World morre com a cena) e
+    // roteia.
+    if (m_world.outcome() == brk::World::Outcome::GameOver)
+    {
+        m_session->setResult(m_world.score(), m_world.level());
+        m_gameRouter->gameOver();
+    }
 }
 
 void ForgeGameScene::draw()
@@ -83,9 +95,22 @@ void ForgeGameScene::draw()
     drawSprite(sprites::kPaddle, m_world.paddle(), forgeui::color::kSuccess);
     drawSprite(sprites::kBall, m_world.ball(), forgeui::color::kText);
 
-    char hud[64] = {};
-    std::snprintf(hud, sizeof(hud), "TIJOLOS %u   BOLAS PERDIDAS %u", m_world.bricksAlive(), m_world.ballsLost());
-    forgeui::drawText(hud, 24.0f, 24.0f, 18.0f, forgeui::color::kDim);
+    // HUD: pontos a esquerda, vidas em raquetes, fase a direita.
+    char score[32] = {};
+    std::snprintf(score, sizeof(score), "%04d", m_world.score());
+    forgeui::drawText(score, 24.0f, 20.0f, 24.0f, forgeui::color::kValue);
+
+    std::string paddles;
+    for (int i = 0; i < m_world.lives(); ++i)
+    {
+        paddles += "= ";
+    }
+    forgeui::drawText(paddles, 24.0f, 50.0f, 22.0f, forgeui::color::kSuccess);
+
+    char level[32] = {};
+    std::snprintf(level, sizeof(level), "FASE %u", m_world.level());
+    forgeui::drawText(level, forgeui::screenWidth() - forgeui::textWidth(level, 18.0f) - 24.0f, 24.0f, 18.0f,
+                      forgeui::color::kDim);
 
     if (m_world.serving())
     {

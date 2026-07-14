@@ -13,14 +13,18 @@ World::World(const WorldConfig config): m_config(config)
 {
     if (m_config.spawnBricks)
     {
-        for (uint32_t i = 0; i < kBrickCount; ++i)
-        {
-            m_brickAlive[i] = true;
-        }
-        m_bricksAlive = kBrickCount;
+        resetBricks();
     }
 
     resetBallToPaddle();
+}
+
+int World::scoreForRow(const uint32_t row)
+{
+    // 7/7/4/4/1/1, de cima para baixo — os de cima sao os mais dificeis de
+    // alcancar, entao valem mais.
+    constexpr int kScore[] = { 7, 7, 4, 4, 1, 1 };
+    return row < kRows ? kScore[row] : 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -34,13 +38,13 @@ void World::setMoveAxis(const float axis)
 
 bool World::serve()
 {
-    if (!m_serving)
+    if (!m_serving || m_outcome == Outcome::GameOver)
     {
         return false;
     }
 
     m_serving = false;
-    m_ballVel = { 0.0f, -kBallSpeed }; // saque reto para cima
+    m_ballVel = { 0.0f, -ballSpeed() }; // saque reto para cima
     return true;
 }
 
@@ -50,8 +54,11 @@ bool World::serve()
 
 void World::update(const double dt)
 {
-    if (dt <= 0.0)
+    if (dt <= 0.0 || m_outcome == Outcome::GameOver)
     {
+        // Partida encerrada: a arena congela como esta. A cena le o outcome e
+        // roteia para o gameOver — quem decide o que a derrota SIGNIFICA e o
+        // fluxo do jogo, nao o World.
         return;
     }
 
@@ -63,6 +70,12 @@ void World::update(const double dt)
     collideWalls();
     collideBricks();
     collidePaddle();
+
+    // Parede limpa: a proxima fase entra, mais rapida.
+    if (m_config.spawnBricks && m_bricksAlive == 0)
+    {
+        nextLevel();
+    }
 }
 
 void World::updatePaddle(const double dt)
@@ -119,9 +132,7 @@ void World::collideWalls()
     // jogo trata como derrota, e nao como geometria.
     if (m_ballPos.y > kArenaH)
     {
-        ++m_ballsLost;
-        resetBallToPaddle();
-        m_serving = true;
+        loseLife();
     }
 }
 
@@ -142,12 +153,72 @@ void World::collideBricks()
         }
 
         reflectOff(brickRect(i));
+        award(brickRow(i)); // pontua ANTES de matar: a linha e o que vale
         killBrick(i);
 
         // Um tijolo por quadro: com dois tijolos vizinhos atingidos no mesmo
         // passo, refletir duas vezes devolveria a bola para dentro da parede.
         return;
     }
+}
+
+void World::award(const uint32_t row)
+{
+    m_score += scoreForRow(row);
+    ++m_hits;
+
+    // De tantos em tantos acertos, a bola acelera — a tensao que o arcade cria
+    // sem mudar nenhuma regra. Com teto: sem ele o jogo vira sorteio.
+    if (m_hits % kSpeedUpEveryHits == 0 && m_speedFactor < kMaxSpeedFactor)
+    {
+        m_speedFactor = std::min(m_speedFactor * kSpeedUpFactor, kMaxSpeedFactor);
+
+        // A bola em voo tambem acelera: mesma direcao, novo modulo.
+        const float speed = std::sqrt(m_ballVel.x * m_ballVel.x + m_ballVel.y * m_ballVel.y);
+        if (speed > 0.0f)
+        {
+            const float scale = ballSpeed() / speed;
+            m_ballVel.x *= scale;
+            m_ballVel.y *= scale;
+        }
+    }
+}
+
+void World::loseLife()
+{
+    --m_lives;
+
+    if (m_lives <= 0)
+    {
+        m_lives = 0;
+        m_outcome = Outcome::GameOver;
+        return; // a bola nao volta: acabou
+    }
+
+    resetBallToPaddle();
+    m_serving = true;
+}
+
+void World::nextLevel()
+{
+    ++m_level;
+
+    // Fase nova comeca mais rapida — e o teto continua valendo.
+    m_speedFactor = std::min(m_speedFactor * kLevelSpeedUp, kMaxSpeedFactor);
+    m_hits = 0;
+
+    resetBricks();
+    resetBallToPaddle();
+    m_serving = true; // o jogador saca a fase nova quando quiser
+}
+
+void World::resetBricks()
+{
+    for (uint32_t i = 0; i < kBrickCount; ++i)
+    {
+        m_brickAlive[i] = true;
+    }
+    m_bricksAlive = kBrickCount;
 }
 
 void World::collidePaddle()
@@ -171,9 +242,10 @@ void World::collidePaddle()
     const float offset = std::clamp((ballCenter - paddleCenter) / (paddleRect.w * 0.5f), -1.0f, 1.0f);
 
     const float angle = offset * kMaxBounceAngle;
+    const float speed = ballSpeed();
 
-    m_ballVel.x = std::sin(angle) * kBallSpeed;
-    m_ballVel.y = -std::cos(angle) * kBallSpeed; // sempre para cima
+    m_ballVel.x = std::sin(angle) * speed;
+    m_ballVel.y = -std::cos(angle) * speed; // sempre para cima
 
     m_ballPos.y = paddleRect.y - kBallSize; // desencosta, para nao grudar
 }

@@ -11,6 +11,7 @@
 #include "breakout/game/World.h"
 
 class GameRouter;
+class PlaySession;
 
 // O estado "game": a cena e so a casca — traduz o input da PORTA em comandos do
 // World, chama update(dt) com o passo fixo do engine e desenha lendo as
@@ -21,9 +22,10 @@ class GameRouter;
 // asteroids foi de wireframe, nenhum jogo vivo o compilava.
 class ForgeGameScene final: public cengine::core::IScene
 {
-    std::shared_ptr<GameRouter> m_gameRouter;
-    cengine::input::Keyboard&   m_keyboard;
-    brk::World                  m_world;
+    std::shared_ptr<GameRouter>  m_gameRouter;
+    std::shared_ptr<PlaySession> m_session;
+    cengine::input::Keyboard&    m_keyboard;
+    brk::World                   m_world;
 
     /// Projeta um retangulo da arena (800x600) para pixels da tela.
     [[nodiscard]] brk::Aabb toScreen(const brk::Aabb& rect) const;
@@ -32,7 +34,8 @@ class ForgeGameScene final: public cengine::core::IScene
     void drawSprite(const forgesprite::SpriteRegion& region, const brk::Aabb& rect, uint32_t color) const;
 
 public:
-    ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, cengine::input::Keyboard& keyboard);
+    ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, std::shared_ptr<PlaySession> session,
+                   cengine::input::Keyboard& keyboard);
 
     void onEnter() override {}
     void update(cengine::core::Seconds dt) override;

@@ -153,17 +153,18 @@ TEST(WorldTest, BallBouncesOffTheCeiling)
     EXPECT_GE(world.ball().y, 0.0f);
 }
 
-TEST(WorldTest, BallFallingThroughTheBottomIsLost)
+TEST(WorldTest, BallFallingThroughTheBottomCostsALife)
 {
     brk::World world = emptyArena();
 
-    ASSERT_EQ(world.ballsLost(), 0u);
+    ASSERT_EQ(world.lives(), brk::World::kInitialLives);
 
     world.placeBall({ 400.0f, brk::World::kArenaH - 20.0f }, { 0.0f, brk::World::kBallSpeed });
 
     advance(world, 1.0);
 
-    EXPECT_EQ(world.ballsLost(), 1u) << "o fundo NAO e parede: e por ali que a bola se perde";
+    EXPECT_EQ(world.lives(), brk::World::kInitialLives - 1)
+        << "o fundo NAO e parede: e por ali que a bola se perde";
     EXPECT_TRUE(world.serving()) << "e a proxima bola volta presa a raquete";
 }
 
@@ -388,4 +389,158 @@ TEST(WorldTest, NonPositiveDtDoesNothing)
     world.update(-1.0);
 
     EXPECT_FLOAT_EQ(centerX(world.paddle()), brk::World::kArenaW * 0.5f);
+}
+
+// =============================================================================
+// Placar da partida: pontos, vidas, fases e gameOver (task 04)
+// =============================================================================
+
+namespace {
+
+// Perde a bola pelo fundo, uma vez.
+void loseOneBall(brk::World& world)
+{
+    const int before = world.lives();
+
+    world.placeBall({ 400.0f, brk::World::kArenaH - 20.0f }, { 0.0f, brk::World::kBallSpeed });
+
+    for (int i = 0; i < 60 && world.lives() == before; ++i)
+    {
+        world.update(kStep);
+    }
+}
+
+} // namespace
+
+TEST(WorldTest, GameStartsWithFullLivesNoScoreAndOnLevelOne)
+{
+    const brk::World world;
+
+    EXPECT_EQ(world.lives(), brk::World::kInitialLives);
+    EXPECT_EQ(world.score(), 0);
+    EXPECT_EQ(world.level(), 1u);
+    EXPECT_EQ(world.outcome(), brk::World::Outcome::Playing);
+}
+
+TEST(WorldTest, BreakingABrickScoresByItsRow)
+{
+    // As linhas de CIMA valem mais: sao as mais dificeis de alcancar.
+    EXPECT_GT(brk::World::scoreForRow(0), brk::World::scoreForRow(brk::World::kRows - 1));
+
+    brk::World world;
+
+    const brk::Aabb brick = world.brickRect(kTopRowBrick);
+    world.placeBall({ centerX(brick) - brk::World::kBallSize * 0.5f, brick.y + brick.h + 2.0f },
+                    { 0.0f, -brk::World::kBallSpeed });
+
+    advanceUntilABrickBreaks(world);
+
+    EXPECT_EQ(world.score(), brk::World::scoreForRow(0));
+}
+
+TEST(WorldTest, BouncingOffThePaddleDoesNotScore)
+{
+    const brk::World world = ballFallingOnPaddleAt(brk::World::kArenaW * 0.5f);
+
+    EXPECT_EQ(world.score(), 0) << "rebater nao e conquistar";
+}
+
+namespace {
+
+// Um jogador de mentira: saca quando pode e persegue a bola com a raquete. Sem
+// ele, a bola cai no primeiro retorno e a partida acaba antes de a aceleracao
+// (que so o IMPACTO dispara) ter chance de acontecer.
+void autoPlay(brk::World& world, const int frames)
+{
+    for (int i = 0; i < frames; ++i)
+    {
+        if (world.serving())
+        {
+            world.serve();
+        }
+
+        const float dx = centerX(world.ball()) - centerX(world.paddle());
+        world.setMoveAxis(dx > 2.0f ? 1.0f : (dx < -2.0f ? -1.0f : 0.0f));
+
+        world.update(kStep);
+    }
+}
+
+} // namespace
+
+TEST(WorldTest, TheBallSpeedsUpEveryFewBricks)
+{
+    brk::World world;
+
+    const float initial = world.ballSpeed();
+
+    autoPlay(world, 60 * 30); // meio minuto de jogo automatico
+
+    EXPECT_GT(world.score(), 0) << "o jogador de mentira ao menos quebrou tijolo";
+    EXPECT_GT(world.ballSpeed(), initial) << "de tantos em tantos acertos, a bola acelera";
+    EXPECT_LE(world.ballSpeed(), brk::World::kBallSpeed * brk::World::kMaxSpeedFactor + 1e-3f) << "com teto";
+}
+
+TEST(WorldTest, ClearingTheWallStartsAFasterNextLevel)
+{
+    brk::World world;
+
+    const float speedBefore = world.ballSpeed();
+
+    // Limpa a parede a mao e deixa o update perceber.
+    world.clearBricks();
+    world.update(kStep);
+
+    EXPECT_EQ(world.level(), 2u);
+    EXPECT_EQ(world.bricksAlive(), brk::World::kBrickCount) << "a parede volta inteira";
+    EXPECT_TRUE(world.serving()) << "o jogador saca a fase nova quando quiser";
+    EXPECT_GT(world.ballSpeed(), speedBefore) << "cada fase comeca mais rapida";
+}
+
+TEST(WorldTest, LevelSpeedIsCapped)
+{
+    brk::World world;
+
+    for (int i = 0; i < 40; ++i) // muitas fases
+    {
+        world.clearBricks();
+        world.update(kStep);
+    }
+
+    EXPECT_LE(world.ballSpeed(), brk::World::kBallSpeed * brk::World::kMaxSpeedFactor + 1e-3f);
+}
+
+TEST(WorldTest, RunningOutOfLivesEndsTheGame)
+{
+    brk::World world = emptyArena();
+
+    for (int life = brk::World::kInitialLives; life > 0; --life)
+    {
+        ASSERT_EQ(world.outcome(), brk::World::Outcome::Playing) << "ainda restam " << life << " vidas";
+        loseOneBall(world);
+        ASSERT_EQ(world.lives(), life - 1);
+    }
+
+    EXPECT_EQ(world.outcome(), brk::World::Outcome::GameOver);
+    EXPECT_EQ(world.lives(), 0);
+}
+
+TEST(WorldTest, GameOverFreezesTheSimulation)
+{
+    brk::World world = emptyArena();
+
+    for (int life = brk::World::kInitialLives; life > 0; --life)
+    {
+        loseOneBall(world);
+    }
+    ASSERT_EQ(world.outcome(), brk::World::Outcome::GameOver);
+
+    EXPECT_FALSE(world.serve()) << "sem vidas, sem saque";
+
+    const float paddleBefore = centerX(world.paddle());
+    world.setMoveAxis(1.0f);
+    advance(world, 1.0);
+
+    EXPECT_FLOAT_EQ(centerX(world.paddle()), paddleBefore) << "a arena congela como estava";
+    EXPECT_EQ(world.outcome(), brk::World::Outcome::GameOver);
 }
