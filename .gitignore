@@ -30,7 +30,12 @@
 *.exe
 *.out
 *.app
-*out 
+
+# Arvore de build da plataforma (MSBuild).
+#
+# ATENCAO: aqui NAO pode ser `*out` (como nos irmaos) — esse padrao casa com o
+# diretorio `breakout` e engole o jogo inteiro. Ancorado na raiz, e so a pasta.
+/out/
 
 # VsCode
 *.vs
