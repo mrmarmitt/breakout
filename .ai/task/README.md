@@ -1,0 +1,44 @@
+# Plano de trabalho - Breakout
+
+Quarto jogo do ecossistema cengine, e o consumidor de validacao da vez. Ele foi
+escolhido por um motivo especifico, alem de ser um jogo: **duas pecas das libs
+nao tem NENHUM consumidor vivo hoje**, e isso e como codigo morto — apodrece
+calado.
+
+- o `forgesprite` (batcher de sprites do common) nasceu no spaceinvaders, que
+  esta congelado; o asteroids desligou e foi de wireframe. Nenhum jogo vivo o
+  compila.
+- o **AABB** do `cengine::collision2d` foi promovido com evidencia do
+  spaceinvaders (congelado); o consumidor vivo, o asteroids, usa a metade do
+  circulo.
+
+O Breakout e feito de retangulos e sprites. Ele traz os dois de volta a vida.
+
+## Indice
+
+| # | Task | Status | Categoria |
+|---|------|--------|-----------|
+| 01 | [Bootstrap do casco](01-bootstrap-casco.md) | in-progress | Plataforma |
+
+## Backlog (tasks a abrir quando chegarem)
+
+- **02 — Dominio: raquete, bola e tijolos** (C++ puro + testes CMake): colisao
+  AABB pela `cengine::collision2d` (o consumidor VIVO que faltava). A ENGINE diz
+  que bateu; o JOGO decide a reflexao do vetor — reflexao e politica de gameplay,
+  nao geometria.
+- **03 — Sprites**: atlas do jogo, `forgesprite` LIGADO (o batcher volta a ter
+  consumidor vivo).
+- **04 — Vidas, pontuacao e fases**: fluxo completo.
+- **05 — Pausa** (overlay sobre o jogo): dispara o gate da task 18 da cengine
+  (scene stack / overlays) — o primeiro consumidor real dela.
+- **06 — Audio** (a borda de conhecimento nova): som de raquete, tijolo, vida
+  perdida. **Fica DENTRO deste jogo**: hoje nenhum jogo tem som, entao promover
+  uma ponte de audio agora seria especulacao pura (criterio 2 da ADR 0002 com
+  ZERO evidencias). A promocao espera o segundo jogo com som.
+- **07 — Recordes** (politica do jogo, padrao TSV dos irmaos).
+
+## Regra pratica
+
+Dominio em `src/breakout/` sem nenhum include do The-Forge; plataforma em
+`src/platform/theforge/`. Toda mexida na cengine ou no common e validada por
+este jogo antes de taggear.
