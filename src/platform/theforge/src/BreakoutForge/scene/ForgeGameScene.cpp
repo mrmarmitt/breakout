@@ -1,40 +1,24 @@
 #include "ForgeGameScene.h"
 
 #include <cstdio>
-#include <string>
 #include <utility>
 
 #include "breakout/game/GameRouter.h"
 
+#include "../BreakoutSprites.h"
+#include "ForgeSpriteUi.h"
 #include "ForgeUi.h"
 
 using cengine::input::Key;
 
 namespace {
 
-// Cor por linha de tijolo (as de cima valem mais — a pontuacao entra na task 04).
+// Cor por linha de tijolo (as de cima valem mais — a pontuacao entra na task
+// 04). O atlas e branco: aqui a cor E o tint.
 constexpr uint32_t kRowColors[] = {
-    forgeui::color::kAccent,  forgeui::color::kValue,  forgeui::color::kSuccess,
-    forgeui::color::kSuccess, forgeui::color::kText,   forgeui::color::kDim,
+    forgeui::color::kAccent, forgeui::color::kValue, forgeui::color::kSuccess,
+    forgeui::color::kText,   forgeui::color::kDim,   forgeui::color::kFaint,
 };
-
-// Enquanto nao ha sprite, um retangulo e desenhado como uma FILEIRA DE '#'
-// dimensionada para o tamanho dele. Feio de proposito: o desenho de verdade e
-// a task 03.
-void drawBlock(const brk::Aabb& r, const uint32_t color)
-{
-    const float fontSize = r.h;
-    const float glyphW = forgeui::textWidth("#", fontSize);
-    const auto  count = static_cast<int>(r.w / (glyphW > 0.0f ? glyphW : 1.0f));
-
-    std::string block;
-    for (int i = 0; i < count; ++i)
-    {
-        block += "#";
-    }
-
-    forgeui::drawText(block, r.x, r.y, fontSize, color);
-}
 
 } // namespace
 
@@ -45,10 +29,20 @@ ForgeGameScene::ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, cengine::
 
 brk::Aabb ForgeGameScene::toScreen(const brk::Aabb& rect) const
 {
+    // A projecao arena -> tela estica X e Y de forma DIFERENTE (800x600 numa
+    // janela 1280x720) — e por isso que o sprite precisa de um retangulo de
+    // destino, e nao de uma escala uniforme.
     const float sx = forgeui::screenWidth() / brk::World::kArenaW;
     const float sy = forgeui::screenHeight() / brk::World::kArenaH;
 
     return { rect.x * sx, rect.y * sy, rect.w * sx, rect.h * sy };
+}
+
+void ForgeGameScene::drawSprite(const forgesprite::SpriteRegion& region, const brk::Aabb& rect,
+                                const uint32_t color) const
+{
+    const brk::Aabb screen = toScreen(rect);
+    forgesprite::drawSpriteRect(region, screen.x, screen.y, screen.w, screen.h, color);
 }
 
 void ForgeGameScene::input()
@@ -76,16 +70,18 @@ void ForgeGameScene::update(const cengine::core::Seconds dt)
 
 void ForgeGameScene::draw()
 {
+    // Sprites primeiro, texto depois: o drawText da flush no lote pendente, e o
+    // HUD fica por cima do jogo.
     for (uint32_t i = 0; i < m_world.brickCount(); ++i)
     {
         if (m_world.brickAlive(i))
         {
-            drawBlock(toScreen(m_world.brickRect(i)), kRowColors[m_world.brickRow(i)]);
+            drawSprite(sprites::kBrick, m_world.brickRect(i), kRowColors[m_world.brickRow(i)]);
         }
     }
 
-    drawBlock(toScreen(m_world.paddle()), forgeui::color::kSuccess);
-    drawBlock(toScreen(m_world.ball()), forgeui::color::kText);
+    drawSprite(sprites::kPaddle, m_world.paddle(), forgeui::color::kSuccess);
+    drawSprite(sprites::kBall, m_world.ball(), forgeui::color::kText);
 
     char hud[64] = {};
     std::snprintf(hud, sizeof(hud), "TIJOLOS %u   BOLAS PERDIDAS %u", m_world.bricksAlive(), m_world.ballsLost());

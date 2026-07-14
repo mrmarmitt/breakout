@@ -19,12 +19,11 @@ O Breakout e feito de retangulos e sprites. Ele traz os dois de volta a vida.
 | # | Task | Status | Categoria |
 |---|------|--------|-----------|
 | 01 | [Bootstrap do casco](01-bootstrap-casco.md) | done | Plataforma |
-| 02 | [Dominio: raquete, bola e tijolos](02-dominio-raquete-bola-tijolos.md) | in-progress | Dominio |
+| 02 | [Dominio: raquete, bola e tijolos](02-dominio-raquete-bola-tijolos.md) | done | Dominio |
+| 03 | [Sprites](03-sprites.md) | in-progress | Plataforma |
 
 ## Backlog (tasks a abrir quando chegarem)
 
-- **03 — Sprites**: atlas do jogo, `forgesprite` LIGADO (o batcher volta a ter
-  consumidor vivo).
 - **04 — Vidas, pontuacao e fases**: fluxo completo.
 - **05 — Pausa** (overlay sobre o jogo): dispara o gate da task 18 da cengine
   (scene stack / overlays) — o primeiro consumidor real dela.

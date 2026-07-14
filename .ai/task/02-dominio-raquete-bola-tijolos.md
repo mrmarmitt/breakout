@@ -1,6 +1,6 @@
 # 02 - Dominio: raquete, bola e tijolos
 
-- **Status:** in-progress (suite verde; falta a validacao jogavel)
+- **Status:** done (2026-07-14 — validado jogando pelo usuario)
 - **Prioridade:** alta - e o jogo.
 - **Categoria:** Dominio
 - **Depende de:** task 01 (casco).
@@ -69,5 +69,5 @@ colide" agora abre uma COLUNA inteira e manda a bola pelo corredor.
 - [x] Build MSBuild verde (Release|x64), sem warnings.
 - [x] `src/breakout/` sem nenhum include do The-Forge.
 - [x] O AABB da cengine tem consumidor VIVO.
-- [ ] Validacao jogavel: sacar, rebater, controlar o angulo pela posicao da
-      raquete, quebrar a parede, perder a bola no fundo.
+- [x] Validacao jogavel: sacar, rebater, controlar o angulo pela posicao da
+      raquete, quebrar a parede, perder a bola no fundo. (2026-07-14.)

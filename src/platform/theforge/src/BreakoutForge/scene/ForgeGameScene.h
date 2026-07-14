@@ -6,6 +6,8 @@
 #include <cengine/core/Time.hpp>
 #include <cengine/input/Keyboard.hpp>
 
+#include "ForgeSpriteUi.h"
+
 #include "breakout/game/World.h"
 
 class GameRouter;
@@ -14,8 +16,9 @@ class GameRouter;
 // World, chama update(dt) com o passo fixo do engine e desenha lendo as
 // consultas. Nenhuma regra de jogo mora aqui.
 //
-// Desenho ainda por TEXTO (os sprites entram na task 03, que e quando este jogo
-// traz o forgesprite de volta a vida).
+// Desenho em SPRITES (forgesprite, do platform-theforge-common): este jogo e
+// quem traz o batcher de volta a vida — desde que o spaceinvaders congelou e o
+// asteroids foi de wireframe, nenhum jogo vivo o compilava.
 class ForgeGameScene final: public cengine::core::IScene
 {
     std::shared_ptr<GameRouter> m_gameRouter;
@@ -24,6 +27,9 @@ class ForgeGameScene final: public cengine::core::IScene
 
     /// Projeta um retangulo da arena (800x600) para pixels da tela.
     [[nodiscard]] brk::Aabb toScreen(const brk::Aabb& rect) const;
+
+    /// Desenha uma regiao do atlas ESTICADA sobre um retangulo da arena.
+    void drawSprite(const forgesprite::SpriteRegion& region, const brk::Aabb& rect, uint32_t color) const;
 
 public:
     ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, cengine::input::Keyboard& keyboard);

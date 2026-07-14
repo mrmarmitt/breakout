@@ -86,15 +86,19 @@ int main()
         // cenas leem. Vive no ForgeUi (sobrevive a todas as cenas).
         ForgeSceneFactory::populateForgeScenes(sceneRepositoryRef, gameRouter, forgeui::keyboard());
 
-        // Casco do common: fonte do The-Forge. Os dois batchers comecam
-        // DESLIGADOS — o casco e so de texto; os sprites entram na task 03
-        // (este jogo e quem traz o forgesprite de volta a vida).
+        // Casco do common: fonte do The-Forge + o batcher de SPRITES ligado (o
+        // atlas do jogo, gerado por tools/make-atlas-dds.ps1 e resolvido pelo
+        // RD_TEXTURES do PathStatement). Este jogo e quem traz o forgesprite de
+        // volta a vida — desde que o spaceinvaders congelou e o asteroids foi de
+        // wireframe, nenhum jogo vivo o compilava.
+        //
+        // O batcher de LINHAS fica desligado: aqui nao ha wireframe.
         TheForgeWindowDesc windowDesc = {};
         windowDesc.appName = kAppName;
         windowDesc.width = 1280;
         windowDesc.height = 720;
         windowDesc.fontPath = "TitilliumText/TitilliumText-Bold.otf";
-        windowDesc.sprites.atlasPath = nullptr;
+        windowDesc.sprites.atlasPath = "atlas.dds";
         windowDesc.lines.enabled = false;
 
         // Modo PROPRIO por construcao: a cengine dirige o loop e o The-Forge
