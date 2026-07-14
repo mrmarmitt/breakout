@@ -27,11 +27,23 @@ class ForgeGameScene final: public cengine::core::IScene
     cengine::input::Keyboard&    m_keyboard;
     brk::World                   m_world;
 
+    /// PAUSA: um overlay do JOGO, nao um estado do router.
+    ///
+    /// Pausar nao e navegar: a cena do jogo continua VIVA (com o World dentro
+    /// dela) e so para de receber update — se fosse um estado, o router
+    /// descarregaria a cena no commit e a partida morreria junto. A cengine nao
+    /// precisou de scene stack para isto; ver a decisao na task 05.
+    bool   m_paused = false;
+    double m_pausedElapsed = 0.0; // relogio so do overlay (o jogo esta congelado)
+
     /// Projeta um retangulo da arena (800x600) para pixels da tela.
     [[nodiscard]] brk::Aabb toScreen(const brk::Aabb& rect) const;
 
     /// Desenha uma regiao do atlas ESTICADA sobre um retangulo da arena.
     void drawSprite(const forgesprite::SpriteRegion& region, const brk::Aabb& rect, uint32_t color) const;
+
+    /// O jogo, congelado, atras de um veu escuro + o painel da pausa.
+    void drawPauseOverlay() const;
 
 public:
     ForgeGameScene(std::shared_ptr<GameRouter> gameRouter, std::shared_ptr<PlaySession> session,

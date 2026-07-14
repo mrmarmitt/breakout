@@ -1,5 +1,6 @@
 #include "ForgeGameScene.h"
 
+#include <cmath>
 #include <cstdio>
 #include <string>
 #include <utility>
@@ -12,6 +13,7 @@
 #include "ForgeUi.h"
 
 using cengine::input::Key;
+using cengine::input::KeyEvent;
 
 namespace {
 
@@ -50,12 +52,34 @@ void ForgeGameScene::drawSprite(const forgesprite::SpriteRegion& region, const b
 
 void ForgeGameScene::input()
 {
-    // Edges: transicao de estado e o saque. Movimento e estado CONTINUO, lido no
-    // update — as duas leituras da porta, cada uma no seu lugar.
-    switch (m_keyboard.readKey().key)
+    const KeyEvent event = m_keyboard.readKey();
+
+    // PAUSADO: o overlay come o input. A cena de baixo (esta mesma) nao ve nada
+    // — e a politica "blocksInputBelow" do desenho de scene stack, aqui em uma
+    // linha, porque a camada de baixo somos nos.
+    if (m_paused)
+    {
+        switch (event.key)
+        {
+        case Key::Enter:
+            m_paused = false; // continuar
+            break;
+        case Key::Escape:
+            m_gameRouter->menu(); // abandonar a partida
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+
+    // Edges: pausa e saque. Movimento e estado CONTINUO, lido no update — as
+    // duas leituras da porta, cada uma no seu lugar.
+    switch (event.key)
     {
     case Key::Escape:
-        m_gameRouter->menu();
+        m_paused = true;
+        m_pausedElapsed = 0.0;
         break;
     case Key::Char: // o espaco chega como Char ' ' pela fila (WM_CHAR)
         m_world.serve();
@@ -67,6 +91,14 @@ void ForgeGameScene::input()
 
 void ForgeGameScene::update(const cengine::core::Seconds dt)
 {
+    if (m_paused)
+    {
+        // O World NAO e atualizado: a partida congela exatamente onde estava,
+        // com a bola no ar. O relogio do overlay corre a parte, so para piscar.
+        m_pausedElapsed += dt.count();
+        return;
+    }
+
     m_world.setMoveAxis(m_keyboard.heldAxis(Key::Left, Key::Right));
     m_world.update(dt.count());
 
@@ -112,10 +144,38 @@ void ForgeGameScene::draw()
     forgeui::drawText(level, forgeui::screenWidth() - forgeui::textWidth(level, 18.0f) - 24.0f, 24.0f, 18.0f,
                       forgeui::color::kDim);
 
+    if (m_paused)
+    {
+        drawPauseOverlay();
+        return; // as dicas da pausa substituem as do jogo
+    }
+
     if (m_world.serving())
     {
         forgeui::drawTextCentered("ESPACO para sacar", forgeui::screenHeight() * 0.60f, 24.0f, forgeui::color::kAccent);
     }
 
-    forgeui::drawHints("SETAS <- -> mover   ESPACO sacar   ESC voltar ao menu");
+    forgeui::drawHints("SETAS <- -> mover   ESPACO sacar   ESC pausar");
+}
+
+void ForgeGameScene::drawPauseOverlay() const
+{
+    const float w = forgeui::screenWidth();
+    const float h = forgeui::screenHeight();
+
+    // O veu: o proprio sprite da bola (solido no atlas) esticado sobre a tela
+    // inteira, com tint PRETO e alpha parcial. O jogo continua visivel atras —
+    // "drawsBelow", de graca, porque desenhamos por cima em vez de trocar de
+    // cena.
+    constexpr uint32_t kVeil = 0xC0000000; // ABGR: preto com ~75% de alpha
+    forgesprite::drawSpriteRect(sprites::kBall, 0.0f, 0.0f, w, h, kVeil);
+
+    forgeui::drawTextCentered("P A U S A", h * 0.40f, 44.0f, forgeui::color::kTitle);
+
+    if (std::fmod(m_pausedElapsed, 1.2) < 0.7)
+    {
+        forgeui::drawTextCentered("ENTER para continuar", h * 0.54f, 24.0f, forgeui::color::kAccent);
+    }
+
+    forgeui::drawHints("ENTER continuar   ESC abandonar a partida");
 }

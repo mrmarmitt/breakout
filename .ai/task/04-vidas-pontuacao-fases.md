@@ -1,6 +1,6 @@
 # 04 - Vidas, pontuacao e fases
 
-- **Status:** in-progress (suite verde; falta a validacao jogavel)
+- **Status:** done (2026-07-14 — validado jogando pelo usuario)
 - **Prioridade:** alta - e o que transforma a arena numa PARTIDA.
 - **Categoria:** Dominio + Fluxo
 - **Depende de:** task 02 (o World).
@@ -59,6 +59,6 @@ integracao do jogo inteiro.
       teto de fase, fim das vidas, gameOver congela).
 - [x] Build MSBuild verde (Release|x64), sem warnings.
 - [x] `ballsLost()` removido do World (o andaime da task 02 saiu).
-- [ ] Validacao jogavel: HUD com pontos/vidas/fase; perder 3 bolas leva ao game
+- [x] Validacao jogavel: HUD com pontos/vidas/fase; perder 3 bolas leva ao game
       over com o placar certo; limpar a parede vira a fase e a bola fica mais
-      rapida; ENTER joga de novo (partida zerada).
+      rapida; ENTER joga de novo (partida zerada). (2026-07-14.)
