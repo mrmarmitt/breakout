@@ -9,8 +9,15 @@
 using cengine::input::Key;
 
 namespace {
-constexpr const char* kOptions[] = { "JOGAR", "SAIR" };
-constexpr int         kOptionCount = 2;
+constexpr const char* kOptions[] = { "JOGAR", "RECORDES", "SAIR" };
+constexpr int         kOptionCount = 3;
+
+enum Option
+{
+    kPlay = 0,
+    kRecords,
+    kExit,
+};
 } // namespace
 
 ForgeMenuScene::ForgeMenuScene(std::shared_ptr<GameRouter> gameRouter, cengine::input::Keyboard& keyboard)
@@ -55,10 +62,19 @@ void ForgeMenuScene::input()
         m_selected = (m_selected + 1) % kOptionCount;
         break;
     case Key::Enter:
-        if (m_selected == 0)
+        switch (m_selected)
+        {
+        case kPlay:
             m_gameRouter->game();
-        else
+            break;
+        case kRecords:
+            m_gameRouter->records();
+            break;
+        case kExit:
+        default:
             m_gameRouter->exit();
+            break;
+        }
         break;
     case Key::Escape:
         m_gameRouter->exit();

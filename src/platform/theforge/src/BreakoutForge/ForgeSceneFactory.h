@@ -10,6 +10,10 @@ namespace cengine::input {
 class Keyboard;
 }
 
+namespace brk {
+class RecordService;
+}
+
 class GameRouter;
 class PlaySession;
 class AudioPlayer;
@@ -19,9 +23,10 @@ class AudioPlayer;
 class ForgeSceneFactory
 {
 public:
-    static void populateForgeScenes(cengine::routing::ISceneRepository& sceneRepository,
-                                    const std::shared_ptr<GameRouter>&  gameRouter,
-                                    const std::shared_ptr<PlaySession>& session,
-                                    cengine::input::Keyboard&           keyboard,
-                                    AudioPlayer&                        audio);
+    static void populateForgeScenes(cengine::routing::ISceneRepository&        sceneRepository,
+                                    const std::shared_ptr<GameRouter>&         gameRouter,
+                                    const std::shared_ptr<PlaySession>&        session,
+                                    const std::shared_ptr<brk::RecordService>& records,
+                                    cengine::input::Keyboard&                  keyboard,
+                                    AudioPlayer&                               audio);
 };

@@ -12,6 +12,8 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(breakout_tests
     "${CMAKE_CURRENT_SOURCE_DIR}/breakout/game/WorldTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/breakout/game/service/RecordServiceTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/breakout/game/service/repository/FileRecordRepositoryTest.cpp"
 )
 
 target_link_libraries(breakout_tests

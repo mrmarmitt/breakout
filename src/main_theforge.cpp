@@ -31,6 +31,8 @@
 
 #include "breakout/game/GameRouter.h"
 #include "breakout/game/service/PlaySession.h"
+#include "breakout/game/service/RecordService.h"
+#include "breakout/game/service/repository/FileRecordRepository.h"
 #include "breakout/game/state/StateGame.h"
 
 #include "platform/theforge/src/BreakoutForge/ForgeSceneFactory.h"
@@ -100,9 +102,15 @@ int main()
             LOGF(eWARNING, "[breakout] sem audio: o jogo roda mudo (hr=0x%08X)", audio.lastError());
         }
 
+        // Recordes: politica do jogo (ADR 0002 da cengine — nunca sobe para a
+        // engine). O TSV fica ao lado do exe, junto com o gpu.cfg e as fontes.
+        const auto records =
+            std::make_shared<brk::RecordService>(std::make_shared<brk::FileRecordRepository>("records.tsv"));
+
         // O teclado da PORTA (cengine::input): o casco captura e empurra, as
         // cenas leem. Vive no ForgeUi (sobrevive a todas as cenas).
-        ForgeSceneFactory::populateForgeScenes(sceneRepositoryRef, gameRouter, session, forgeui::keyboard(), audio);
+        ForgeSceneFactory::populateForgeScenes(sceneRepositoryRef, gameRouter, session, records, forgeui::keyboard(),
+                                               audio);
 
         // Casco do common: fonte do The-Forge + o batcher de SPRITES ligado (o
         // atlas do jogo, gerado por tools/make-atlas-dds.ps1 e resolvido pelo
