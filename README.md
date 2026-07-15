@@ -1,8 +1,8 @@
 # Breakout
 
-Quarto jogo de estudo sobre a [cengine](https://github.com/mrmarmitt/cengine),
+Quarto jogo de estudo sobre a [cengine](https://github.com/cengine-dev/cengine),
 com a plataforma The-Forge via
-[platform-theforge-common](https://github.com/mrmarmitt/platform-theforge-common).
+[platform-theforge-common](https://github.com/cengine-dev/platform-theforge-common).
 
 Alem de ser um jogo, ele nasceu para **trazer de volta a vida duas pecas das libs
 que nao tinham nenhum consumidor vivo** — e codigo de lib sem consumidor vivo
