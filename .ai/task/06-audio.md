@@ -27,6 +27,14 @@ Quando um SEGUNDO jogo precisar de som, havera duas evidencias e a ponte podera
 subir — provavelmente como porta da cengine (`play(id)`) com o backend na
 plataforma. Ate la, a copia e o custo aceito (corolario da ADR 0002).
 
+> **Adendo (2026-07-17): aconteceu exatamente assim.** O mario-bros trouxe a 2a
+> copia (deliberada, para medir o gate) e a cengine 0.9.0 promoveu a porta
+> `cengine::audio::Player` com `play(id)` e mais nada — a forma prevista acima.
+> O mario e o consumidor de validacao; ESTE jogo segue com o backend proprio e
+> pinado na cengine 0.8.0 (padrao do ecossistema: jogo antigo nao migra, o novo
+> valida). O backend duplicado virou candidata no platform-theforge-common
+> (task 05 de la), esperando o 3o jogo com som.
+
 **O World RELATA; a cena decide como soa.** O dominio ganhou `brk::Events` —
 contadores do que aconteceu NESTE quadro (batidas na raquete, na parede, tijolos
 quebrados, vida perdida, fase virada), zerados no comeco de cada `update`.
